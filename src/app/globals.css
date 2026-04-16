@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* Dark UI: deep background, purple accent */
+:root {
+  --travel-bg: #07080d;
+  --travel-surface: #10121a;
+  --travel-ink: #eef0f7;
+  --travel-muted: #8b93a8;
+  --travel-sea: #6e5cff;
+  --travel-sea-deep: #4b3acb;
+  --travel-sand: #1a1f2e;
+  --travel-border: #262b3d;
+  --travel-input: #0b0d14;
+  --travel-glow: rgba(110, 92, 255, 0.35);
+  --background: var(--travel-bg);
+  --foreground: var(--travel-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--travel-bg);
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% -15%, rgba(110, 92, 255, 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(78, 120, 255, 0.06), transparent 45%);
+  color: var(--travel-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(110, 92, 255, 0.35);
+  color: var(--travel-ink);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea {
+  color: var(--travel-ink);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--travel-muted);
+  opacity: 0.85;
+}
+
+code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85em;
+  padding: 0.12em 0.4em;
+  border-radius: 0.35rem;
+  background: var(--travel-input);
+  border: 1px solid var(--travel-border);
+  color: var(--travel-sea);
+}
