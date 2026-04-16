@@ -61,7 +61,6 @@ The app calls `track()` when a LaunchDarkly client exists (see [`/Users/briannor
 | `paywall_cta_clicked` | Click signup or log in on a paywall | `slug`, `cta`: `signup` \| `login` |
 | `upgrade_prompt_shown` | Daily limit wall shown | `reason`, `slug` |
 | `account_created` | Successful sign-up | `tier: free` |
-| `signup_completed` | Same moment as account creation (alias for funnels that prefer this name) | `tier: free` |
 | `daily_limit_reached` | Free user hit the 2-article-per-day cap | `slug` |
 | `checkout_started` | Fake checkout submit begins | `plan` |
 | `checkout_completed` | Fake checkout completes | `plan` |

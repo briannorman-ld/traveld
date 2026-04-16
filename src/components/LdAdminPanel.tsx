@@ -1,10 +1,11 @@
 "use client";
 
-import type { LDClient, LDFlagSet } from "launchdarkly-react-client-sdk";
+import type { LDClient, LDFlagSet, LDFlagValue } from "launchdarkly-react-client-sdk";
 import { useLDClient, useFlags } from "launchdarkly-react-client-sdk";
 import { useMemo, useState } from "react";
 import { useSession } from "@/context/session";
 import { buildLdContext } from "@/lib/ld-context";
+import { DEFAULT_FLAGS, FLAG_KEYS } from "@/lib/flags";
 import {
   clearDemoTrackEvents,
   useDemoTrackEvents,
@@ -69,9 +70,51 @@ function LdAdminPanelBody({
   );
 
   const clientContextJson = stringifyClientContext(ldClient);
-
   const builtJson = JSON.stringify(builtContext, null, 2);
-  const flagsJson = flags ? JSON.stringify(flags, null, 2) : null;
+  /** SDK `getContext()` is authoritative once the client exists; same data as `buildLdContext` after identify. */
+  const evaluationContextJson = clientContextJson ?? builtJson;
+  const evaluationContextHelp = ldClient
+    ? clientContextJson
+      ? "Active evaluation context from the SDK (getContext)."
+      : "Showing session-built context — SDK context not available yet."
+    : ldEnabled
+      ? "Session-built context — LD client still initializing."
+      : "Session-built context — no client-side ID configured.";
+
+  const { flagEvaluationsJson, experimentSummary } = useMemo(() => {
+    if (!ldClient) {
+      return { flagEvaluationsJson: null as string | null, experimentSummary: null as string | null };
+    }
+    const keys = new Set<string>([
+      ...Object.values(FLAG_KEYS),
+      ...Object.keys(flags ?? {}),
+    ]);
+    const payload: Record<string, unknown> = {};
+    const inExperimentKeys: string[] = [];
+    for (const key of keys) {
+      const def = (DEFAULT_FLAGS[key] ?? flags?.[key] ?? false) as LDFlagValue;
+      try {
+        const d = ldClient.variationDetail(key, def);
+        const reason = d.reason ?? null;
+        if (reason?.inExperiment === true) inExperimentKeys.push(key);
+        payload[key] = {
+          value: d.value,
+          variationIndex: d.variationIndex,
+          reason,
+        };
+      } catch (e) {
+        payload[key] = { error: String(e) };
+      }
+    }
+    const summary =
+      inExperimentKeys.length > 0
+        ? `inExperiment on: ${inExperimentKeys.join(", ")}`
+        : "No flags report inExperiment: true (see per-flag reason in JSON below).";
+    return {
+      flagEvaluationsJson: JSON.stringify(payload, null, 2),
+      experimentSummary: summary,
+    };
+  }, [ldClient, flags]);
 
   async function copyText(label: string, text: string) {
     try {
@@ -174,56 +217,50 @@ function LdAdminPanelBody({
 
             <div>
               <div className="flex items-center justify-between gap-2">
-                <SectionTitle>App context (sent to LD)</SectionTitle>
+                <SectionTitle>LD context</SectionTitle>
                 <button
                   type="button"
-                  onClick={() => copyText("ctx", builtJson)}
+                  onClick={() => copyText("ctx", evaluationContextJson)}
                   className="shrink-0 rounded border border-[var(--travel-border)] px-2 py-0.5 text-[10px] text-[var(--travel-muted)] hover:text-[var(--travel-ink)]"
                 >
                   {copied === "ctx" ? "Copied" : "Copy"}
                 </button>
               </div>
+              <p className="mt-1 text-[10px] text-[var(--travel-muted)]">{evaluationContextHelp}</p>
               <pre className="mt-1 max-h-36 overflow-auto rounded-lg border border-[var(--travel-border)] bg-[var(--travel-input)] p-2 font-mono text-[10px] leading-relaxed text-[var(--travel-ink)]/90">
-                {builtJson}
+                {evaluationContextJson}
               </pre>
             </div>
 
-            {clientContextJson ? (
+            {flagEvaluationsJson ? (
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <SectionTitle>Client context (SDK)</SectionTitle>
+                  <SectionTitle>Flags (LD evaluation)</SectionTitle>
                   <button
                     type="button"
-                    onClick={() => copyText("live", clientContextJson)}
-                    className="shrink-0 rounded border border-[var(--travel-border)] px-2 py-0.5 text-[10px] text-[var(--travel-muted)] hover:text-[var(--travel-ink)]"
-                  >
-                    {copied === "live" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-                <pre className="mt-1 max-h-36 overflow-auto rounded-lg border border-[var(--travel-border)] bg-[var(--travel-input)] p-2 font-mono text-[10px] leading-relaxed text-[var(--travel-ink)]/90">
-                  {clientContextJson}
-                </pre>
-              </div>
-            ) : null}
-
-            {flagsJson ? (
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <SectionTitle>Flags (current)</SectionTitle>
-                  <button
-                    type="button"
-                    onClick={() => copyText("flags", flagsJson)}
+                    onClick={() => copyText("flags", flagEvaluationsJson)}
                     className="shrink-0 rounded border border-[var(--travel-border)] px-2 py-0.5 text-[10px] text-[var(--travel-muted)] hover:text-[var(--travel-ink)]"
                   >
                     {copied === "flags" ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <pre className="mt-1 max-h-40 overflow-auto rounded-lg border border-[var(--travel-border)] bg-[var(--travel-input)] p-2 font-mono text-[10px] leading-relaxed text-[var(--travel-ink)]/90">
-                  {flagsJson}
+                <p className="mt-1 text-[10px] text-[var(--travel-muted)]">
+                  From <code className="text-[var(--travel-sea)]">variationDetail()</code> — each
+                  flag includes <code className="text-[var(--travel-sea)]">reason</code> (when LD
+                  returns it). Experiment exposure is{" "}
+                  <code className="text-[var(--travel-sea)]">reason.inExperiment</code>.
+                </p>
+                {experimentSummary ? (
+                  <p className="mt-1 font-mono text-[10px] text-[var(--travel-ink)]/90">
+                    {experimentSummary}
+                  </p>
+                ) : null}
+                <pre className="mt-1 max-h-48 overflow-auto rounded-lg border border-[var(--travel-border)] bg-[var(--travel-input)] p-2 font-mono text-[10px] leading-relaxed text-[var(--travel-ink)]/90">
+                  {flagEvaluationsJson}
                 </pre>
               </div>
             ) : ldEnabled && ldClient ? (
-              <p className="text-[var(--travel-muted)]">No flag snapshot yet.</p>
+              <p className="text-[var(--travel-muted)]">No flag evaluation snapshot yet.</p>
             ) : null}
 
             <div>

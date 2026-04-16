@@ -91,7 +91,6 @@ function SignupFormWithLd({ returnTo }: SignupFormProps) {
       return;
     }
     trackSafe(ldClient, "account_created", { tier: "free" });
-    trackSafe(ldClient, "signup_completed", { tier: "free" });
     router.push(returnTo ?? "/articles");
   };
 

@@ -38,6 +38,7 @@ export function LaunchDarklyWrapper({
     <LDProvider
       clientSideID={clientSideID}
       context={context}
+      options={{ evaluationReasons: true }}
       reactOptions={{ useCamelCaseFlagKeys: false }}
     >
       <LdContextIdentifyEffect />
