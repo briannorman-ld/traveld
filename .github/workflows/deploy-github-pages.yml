@@ -31,14 +31,26 @@ jobs:
       - name: Install
         run: npm ci
 
+      # Project Pages live at github.io/<repo>/ — Next needs basePath or CSS/JS 404 at site root.
+      - name: Set base path for GitHub Pages
+        id: pages_base
+        run: |
+          REPO="${GITHUB_REPOSITORY##*/}"
+          OVERRIDE="${{ vars.NEXT_PUBLIC_BASE_PATH }}"
+          if [ -n "$OVERRIDE" ]; then
+            echo "path=$OVERRIDE" >> "$GITHUB_OUTPUT"
+          elif [[ "${REPO,,}" == *.github.io ]]; then
+            echo "path=" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=/$REPO" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build static site
         run: npm run build
         env:
           # Optional: LaunchDarkly client ID (same as .env.local). Repo → Settings → Secrets → Actions.
           NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID: ${{ secrets.NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_SIDE_ID }}
-          # For https://<user>.github.io/<repo>/ set repo variable NEXT_PUBLIC_BASE_PATH to /repo (e.g. /traveld).
-          # For a root domain or username.github.io user site with no subpath, leave the variable unset/empty.
-          NEXT_PUBLIC_BASE_PATH: ${{ vars.NEXT_PUBLIC_BASE_PATH }}
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages_base.outputs.path }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
