@@ -56,8 +56,9 @@ The app calls `track()` when a LaunchDarkly client exists (see [`/Users/briannor
 | Event | When | Useful properties |
 |-------|------|---------------------|
 | `article_view` | First render of an article for a given `surface` | `slug`, `surface` (`full` \| `preview` \| `blocked` \| `limit`), `pay_wall`, `user_tier`, `source` |
-| `paywall_gate_viewed` | Sign-up gate shown | `slug`, `variant` |
-| `paywall_cta_clicked` | CTA on gate / preview | `slug`, `cta` |
+| `paywall_shown` | Anonymous paywall visible (full block or partial teaser) | `slug` |
+| `create_account_clicked` | Any “create account” path toward `/signup` | `source` (`header` \| `hero` \| `login_prompt` \| `account_anonymous` \| `paywall`), optional `slug` on articles |
+| `paywall_cta_clicked` | Click signup or log in on a paywall | `slug`, `cta`: `signup` \| `login` |
 | `upgrade_prompt_shown` | Daily limit wall shown | `reason`, `slug` |
 | `account_created` | Successful sign-up | `tier: free` |
 | `signup_completed` | Same moment as account creation (alias for funnels that prefer this name) | `tier: free` |

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroSignupCta } from "@/components/HeroSignupCta";
 import { getAllArticles } from "@/lib/articles";
 
 export default function Home() {
@@ -30,12 +31,7 @@ export default function Home() {
           >
             Browse articles
           </Link>
-          <Link
-            href="/signup"
-            className="rounded-full border border-white/40 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:border-white/60 hover:bg-white/10"
-          >
-            Create free account
-          </Link>
+          <HeroSignupCta />
         </div>
       </section>
 

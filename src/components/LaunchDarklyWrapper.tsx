@@ -2,6 +2,8 @@
 
 import { LDProvider } from "launchdarkly-react-client-sdk";
 import { useMemo } from "react";
+import { LdAdminWithLd, LdAdminWithoutLd } from "@/components/LdAdminPanel";
+import { LdContextIdentifyEffect } from "@/components/LdContextIdentifyEffect";
 import { useSession } from "@/context/session";
 import { buildLdContext } from "@/lib/ld-context";
 
@@ -24,7 +26,12 @@ export function LaunchDarklyWrapper({
   );
 
   if (!clientSideID) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <LdAdminWithoutLd />
+      </>
+    );
   }
 
   return (
@@ -33,7 +40,9 @@ export function LaunchDarklyWrapper({
       context={context}
       reactOptions={{ useCamelCaseFlagKeys: false }}
     >
+      <LdContextIdentifyEffect />
       {children}
+      <LdAdminWithLd />
     </LDProvider>
   );
 }

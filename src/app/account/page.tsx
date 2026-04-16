@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CreateAccountLink } from "@/components/CreateAccountLink";
 import { useSession } from "@/context/session";
 
 export default function AccountPage() {
@@ -25,12 +26,13 @@ export default function AccountPage() {
           demo.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
+          <CreateAccountLink
             href="/signup"
+            source="account_anonymous"
             className="rounded-full bg-gradient-to-r from-[var(--travel-sea-deep)] to-[var(--travel-sea)] px-4 py-2 text-sm font-medium text-white shadow-[0_0_16px_-6px_var(--travel-glow)]"
           >
             Sign up
-          </Link>
+          </CreateAccountLink>
           <Link
             href="/login"
             className="rounded-full border border-[var(--travel-border)] px-4 py-2 text-sm font-medium text-[var(--travel-ink)]"

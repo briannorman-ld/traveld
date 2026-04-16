@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CreateAccountLink } from "@/components/CreateAccountLink";
 import { useSession } from "@/context/session";
 
 function ProfileMenu() {
@@ -120,12 +121,13 @@ export function SiteHeader() {
           ) : session.user ? (
             <ProfileMenu />
           ) : (
-            <Link
+            <CreateAccountLink
               href="/signup"
+              source="header"
               className="rounded-full bg-gradient-to-r from-[var(--travel-sea-deep)] to-[var(--travel-sea)] px-4 py-2 text-sm font-medium text-white shadow-[0_0_20px_-4px_var(--travel-glow)] transition hover:brightness-110"
             >
               Create Account
-            </Link>
+            </CreateAccountLink>
           )}
         </div>
       </div>

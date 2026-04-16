@@ -140,21 +140,25 @@ function ArticleBody({
 }) {
   const session = useSession();
   const articleViewKey = useRef<string | null>(null);
-  const gateViewKey = useRef<string | null>(null);
+  const paywallShownKey = useRef<string | null>(null);
   const limitPromptKey = useRef<string | null>(null);
   const fullViewRecorded = useRef(false);
 
   useEffect(() => {
-    if (!session.ready) return;
-    if (!policy.showSignupGate || !ldClient) return;
+    if (!session.ready || !ldClient) return;
+    if (!policy.showSignupGate && !policy.showPreviewTeaser) return;
     const k = `${article.slug}:${policy.payWall}`;
-    if (gateViewKey.current === k) return;
-    gateViewKey.current = k;
-    trackSafe(ldClient, "paywall_gate_viewed", {
-      slug: article.slug,
-      variant: policy.payWall,
-    });
-  }, [article.slug, ldClient, policy.payWall, policy.showSignupGate, session.ready]);
+    if (paywallShownKey.current === k) return;
+    paywallShownKey.current = k;
+    trackSafe(ldClient, "paywall_shown", { slug: article.slug });
+  }, [
+    article.slug,
+    ldClient,
+    policy.payWall,
+    policy.showPreviewTeaser,
+    policy.showSignupGate,
+    session.ready,
+  ]);
 
   useEffect(() => {
     if (!session.ready) return;
@@ -264,12 +268,16 @@ function ArticleBody({
           <div className="mt-4 flex flex-wrap items-center justify-start gap-x-6 gap-y-2">
             <Link
               href={signupFromArticleHref}
-              onClick={() =>
+              onClick={() => {
+                trackSafe(ldClient, "create_account_clicked", {
+                  source: "paywall",
+                  slug: article.slug,
+                });
                 trackSafe(ldClient, "paywall_cta_clicked", {
                   slug: article.slug,
                   cta: "signup",
-                })
-              }
+                });
+              }}
               className="inline-flex rounded-full bg-gradient-to-r from-[var(--travel-sea-deep)] to-[var(--travel-sea)] px-4 py-2 text-sm font-medium text-white shadow-[0_0_16px_-6px_var(--travel-glow)]"
             >
               {gateCopy.primaryCta}
@@ -314,18 +322,28 @@ function ArticleBody({
                   <div className="mt-4 flex flex-wrap items-center justify-start gap-x-6 gap-y-2">
                     <Link
                       href={signupFromArticleHref}
-                      onClick={() =>
-                        trackSafe(ldClient, "paywall_cta_clicked", {
+                      onClick={() => {
+                        trackSafe(ldClient, "create_account_clicked", {
+                          source: "paywall",
                           slug: article.slug,
-                          cta: "signup_preview",
-                        })
-                      }
+                        });
+                trackSafe(ldClient, "paywall_cta_clicked", {
+                  slug: article.slug,
+                  cta: "signup",
+                });
+                      }}
                       className="inline-flex items-center rounded-full bg-gradient-to-r from-[var(--travel-sea-deep)] to-[var(--travel-sea)] px-4 py-2 text-sm font-medium text-white shadow-[0_0_16px_-6px_var(--travel-glow)]"
                     >
                       {gateCopy.primaryCta}
                     </Link>
                     <Link
                       href={loginFromArticleHref}
+                      onClick={() =>
+                        trackSafe(ldClient, "paywall_cta_clicked", {
+                          slug: article.slug,
+                          cta: "login",
+                        })
+                      }
                       className="inline-flex items-center text-sm font-medium text-[var(--travel-sea)] underline underline-offset-2"
                     >
                       {gateCopy.secondaryCta ?? "Log in"}

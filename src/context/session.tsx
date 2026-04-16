@@ -59,6 +59,8 @@ type SessionContextValue = {
   logout: () => void;
   setPaidTier: () => void;
   resetDemoStorage: () => void;
+  /** New random anonymous key (localStorage). LD context uses it when logged out—use for experiment splits. */
+  regenerateAnonymousLdKey: () => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -185,6 +187,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     window.location.reload();
   }, [persistSession]);
 
+  const regenerateAnonymousLdKey = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `anon_${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(ANON_KEY, id);
+    setAnonymousKey(id);
+  }, []);
+
   const value = useMemo<SessionContextValue>(
     () => ({
       anonymousKey,
@@ -196,6 +208,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       logout,
       setPaidTier,
       resetDemoStorage,
+      regenerateAnonymousLdKey,
     }),
     [
       anonymousKey,
@@ -206,6 +219,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       logout,
       setPaidTier,
       resetDemoStorage,
+      regenerateAnonymousLdKey,
     ],
   );
 

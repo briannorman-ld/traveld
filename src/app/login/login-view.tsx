@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { CreateAccountLink } from "@/components/CreateAccountLink";
 import { LoginForm } from "@/components/LoginForm";
 import { normalizePostAuthReturnTo } from "@/lib/return-to";
 
@@ -30,9 +31,13 @@ export function LoginView() {
       </div>
       <p className="mt-6 text-center text-sm text-[var(--travel-muted)]">
         New here?{" "}
-        <Link href={signupHref} className="font-medium text-[var(--travel-sea)] underline">
+        <CreateAccountLink
+          href={signupHref}
+          source="login_prompt"
+          className="font-medium text-[var(--travel-sea)] underline"
+        >
           Create an account
-        </Link>
+        </CreateAccountLink>
       </p>
     </div>
   );
