@@ -8,6 +8,8 @@ export const FLAG_KEYS = {
   freeDailyArticleLimit: "free-daily-article-limit",
   upgradeMessaging: "upgrade-messaging",
   checkoutLayout: "checkout-layout",
+  /** Boolean: show the in-app LD Admin debug panel. */
+  ldAdminPanel: "traveld-ld-admin",
 } as const;
 
 /** Values must match LaunchDarkly variation payloads (snake_case recommended). */
@@ -21,6 +23,7 @@ export const DEFAULT_FLAGS: Record<string, unknown> = {
   [FLAG_KEYS.freeDailyArticleLimit]: "control" satisfies DailyLimitVariation,
   [FLAG_KEYS.upgradeMessaging]: "default" satisfies MessagingVariation,
   [FLAG_KEYS.checkoutLayout]: false,
+  [FLAG_KEYS.ldAdminPanel]: false,
 };
 
 /** Accepts LD string values plus common human labels if configured that way. */

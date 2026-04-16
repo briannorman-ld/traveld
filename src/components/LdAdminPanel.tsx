@@ -303,13 +303,8 @@ function LdAdminPanelBody({
 }
 
 export function LdAdminWithLd() {
-  const ldClient = useLDClient();
   const flags = useFlags();
-  return (
-    <LdAdminPanelBody ldClient={ldClient} flags={flags} ldEnabled />
-  );
-}
-
-export function LdAdminWithoutLd() {
-  return <LdAdminPanelBody ldEnabled={false} />;
+  const ldClient = useLDClient();
+  if (flags[FLAG_KEYS.ldAdminPanel] !== true) return null;
+  return <LdAdminPanelBody ldClient={ldClient} flags={flags} ldEnabled />;
 }
